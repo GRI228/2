@@ -1,0 +1,2009 @@
+Index: Новая папка (3)/less11.py
+===================================================================
+diff --git a/Новая папка (3)/less11.py b/Новая папка (3)/less11.py
+deleted file mode 100644
+--- a/Новая папка (3)/less11.py	
++++ /dev/null	
+@@ -1,38 +0,0 @@
+-# class Singleton(object):
+-#     def __new__(cls):
+-#         if not hasattr(cls, 'instance'):
+-#             cls.instance = super(Singleton, cls).__new__(cls)
+-#         return cls.instance
+-
+-# s = Singleton()
+-# print("Object created", s, id(s))
+-# s1 = Singleton()
+-# print("Object created", s1, id(s1))
+-
+-from datetime import datetime
+-
+-def timedelta(func):
+-    def wrapper(val):
+-        start = datetime.now()
+-        res = func(val)
+-        end = datetime.now()
+-        print(f"time: {end-start}")
+-        return res
+-    return wrapper
+-
+-@timedelta
+-def get_list_1(val):
+-    return [i for i in range(val + 1) if i % 2 == 0]
+-
+-@timedelta
+-def get_list_2(val):
+-    new_list = []
+-    for i in range(val+1):
+-        if i % 2 == 0:
+-            new_list.append(i)
+-    return new_list
+-
+-val = 1000000
+-
+-a = get_list_1(val)
+-b = get_list_2(val)
+\ No newline at end of file
+Index: Новая папка (3)/final_game.py
+===================================================================
+diff --git a/Новая папка (3)/final_game.py b/Новая папка (3)/final_game.py
+deleted file mode 100644
+--- a/Новая папка (3)/final_game.py	
++++ /dev/null	
+@@ -1,113 +0,0 @@
+-from tkinter import *
+-import random
+-
+-window = Tk()
+-
+-w = 600
+-h = 600
+-window.resizable(width=False, height=False)
+-
+-window.geometry(str(w) + 'x' + str(h))
+-
+-# Холст для отрисовки игрового поля
+-canvas = Canvas(window, width=w, height=h)
+-canvas.place(in_=window, x=0, y=0)
+-
+-
+-# Фон для игры
+-bg_photo = PhotoImage(file='bg_2.png')
+-
+-# Персонаж
+-class Knight:
+-    def __init__(self):
+-        self.x = 70
+-        self.y = h // 2
+-        self.v = 0
+-        self.v_x = 0
+-        self.photo = PhotoImage(file='knight.png')
+-# Движение
+-    def up(self, event):
+-        self.v = -3
+-
+-    def down(self, event):
+-        self.v = 3
+-
+-    def right(self, event):
+-        self.v_x = 3
+-
+-    def left(self, event):
+-        self.v_x = -3
+-
+-    def stop(self, event):
+-        self.v = 0
+-        self.v_x = 0
+-
+-    # Дракон
+-class Dragon:
+-    def __init__(self):
+-        self.x = 750
+-        self.y = random.randint(100, 500)
+-        self.v = random.randint(1,3)
+-        self.photo = PhotoImage(file='dragon.png')
+-
+-knight = Knight()
+-
+-dragons = []
+-for i in range(3):
+-    dragons.append(Dragon())
+-
+-def game():
+-    canvas.delete('all')
+-    canvas.create_image(300,300, image=bg_photo)
+-    canvas.create_image(knight.x,knight.y,image=knight.photo)
+-    knight.y += knight.v
+-    knight.x += knight.v_x
+-
+-    if knight.y < 0:
+-        knight.y = 0
+-    if knight.y > h - 50:
+-        knight.y = h - 50
+-    if knight.x > 600:
+-        knight.x = 600
+-    if knight.x < 5:
+-        knight.x = 5
+-
+-
+-    current_dragon = 0
+-    dragon_to_kill = -1
+-
+-    for dragon in dragons:
+-        dragon.x -= dragon.v
+-        canvas.create_image(dragon.x,dragon.y,image=dragon.photo)
+-        # Проверка столкновений
+-        if ((dragon.x-knight.x)**2) + ((dragon.y - knight.y)**2) <= (96)**2:
+-            dragon_to_kill = current_dragon
+-
+-        current_dragon += 1
+-
+-        if dragon.x <= 0:
+-            canvas.delete('all')
+-            canvas.create_text(w//2, h//2, text="You lose!", font="Verdana 42", fill='red')
+-            break
+-
+-
+-    if dragon_to_kill >= 0:
+-        del dragons[dragon_to_kill]
+-
+-    # Условие выигрыша
+-    if len(dragons) == 0:
+-        canvas.delete('all')
+-        canvas.create_text(w//2, h//2, text="You win!", font="Verdana 42", fill='red')
+-    else:
+-        window.after(5, game)
+-
+-
+-game()
+-
+-window.bind('<w>', knight.up)
+-window.bind('<s>', knight.down)
+-window.bind('<KeyRelease>', knight.stop)
+-window.bind('<d>', knight.right)
+-window.bind('<a>', knight.left)
+-
+-window.mainloop()
+Index: Новая папка (3)/less1.py
+===================================================================
+diff --git a/Новая папка (3)/less1.py b/Новая папка (3)/less1.py
+deleted file mode 100644
+--- a/Новая папка (3)/less1.py	
++++ /dev/null	
+@@ -1,28 +0,0 @@
+-import requests
+-import xml.etree.ElementTree as ET
+-from datetime import datetime
+-import contextlib
+-
+-URL = "http://www.cbr.ru/scripts/XML_daily.asp?"
+-today = datetime.today().strftime("%d/%m/%Y")
+-url = f"{URL}?date_req={today}"
+-responce = requests.get(url)
+-xml = ET.fromstring(responce.content)
+-
+-valid_codes = ['USD', 'EUR', 'GBP', 'JPY', 'CHF', 'CNY']
+-
+-@contextlib.contextmanager
+-def get_course_info(currency_id):
+-    valute = xml.find(f"./Valute[CharCode='{currency_id}']")
+-    if valute:
+-        currency = float(valute.find('Value').text.replace(",", "."))
+-        yield f"(1 шт.) {valute.find('Name').text} стоит(ят) {currency:.4f} руб."
+-    else:
+-        yield f"Ошибка: валюта {currency_id} не найдена"
+-
+-currency_id = input("Введите код валюты: ")
+-if currency_id not in valid_codes:
+-    print("Неверный код валюты")
+-else:
+-    with get_course_info(currency_id) as currency:
+-        print(currency)
+Index: Новая папка (3)/8.2.py
+===================================================================
+diff --git a/Новая папка (3)/8.2.py b/Новая папка (3)/8.2.py
+deleted file mode 100644
+--- a/Новая папка (3)/8.2.py	
++++ /dev/null	
+@@ -1,42 +0,0 @@
+-from tkinter import*
+-import requests
+-from bs4 import BeautifulSoup
+-from datetime import datetime
+-
+-window = Tk()
+-window.title('Мое приложение')
+-window.geometry('500x500+200+200')
+-
+-url = "http://www.cbr.ru/scripts/XML_daily.asp?"
+-today = datetime.today().strftime("%d/%m/%Y")
+-date = f"date_req={today}"
+-responce = requests.get(url+date)
+-xml = BeautifulSoup(responce.content, 'lxml')
+-
+-def get_course(id):
+-    xml1 = xml.find("valute", {'id': id})
+-    return {"value": xml1.value.text, "nominal": xml1.nominal.text, "name": xml1.charcode.text}
+-
+-img_logo = PhotoImage(file='bg_2.png')
+-logo = Label
+-
+-file = open(r"/Users/klim/Desktop/Lesson6/Код/valutes.txt", 'a') # rwa
+-file.write(f"{today}\n")
+-for valute in ["R01235", "R01239", "R01375"]:
+-    temp_dict = get_course(valute)
+-    file.write(f"{round(float(temp_dict['value'].replace(',', '.')), 2)} рублей за {temp_dict['nominal']} за {temp_dict['name']}\n")
+-file.close()
+-
+-count = 0
+-
+-def change_label():
+-    global count
+-    count += 1
+-    lab['text']= count
+-
+-lab = Label(window, text='Текст', bg='#f2a268', fg='#00000', font='16')
+-lab.place(x=100, y=100)
+-
+-btn = Button(text='НАЖМИ МЕНЯ', background='#f2a268', fg='#00000', font='16', command=change_label)
+-btn.place(x=200, y=200)
+-window.mainloop()
+\ No newline at end of file
+Index: Новая папка (3)/6.2.py
+===================================================================
+diff --git a/Новая папка (3)/6.2.py b/Новая папка (3)/6.2.py
+deleted file mode 100644
+--- a/Новая папка (3)/6.2.py	
++++ /dev/null	
+@@ -1,69 +0,0 @@
+-import requests
+-from bs4 import BeautifulSoup
+-import datetime
+-
+-url = 'http://www.cbr.ru/scripts/XML_daily.asp?'
+-today = datetime.datetime.today()
+-today = today.strftime('%d/%m/%Y')
+-date = f'date_req={today}'
+-responce = requests.get(url+date)
+-xml = BeautifulSoup(responce.content, 'lxml')
+-
+-def get_course(id):
+-    return xml.find('valute', {'id': id}).value.text
+-
+-print(get_course('R01235'), 'рублей за 1 доллар')
+-print(get_course('R01239'), 'рублей за 1 евро')
+-print(get_course('R01375'), 'рублей за 10 юаней')
+-print(get_course('R01035'), 'рублей за 1 фунт')
+-print(get_course('R01090B'), 'рублей за 1 белорусский рубль')
+-
+-
+-'''from tkinter import*
+-
+-window = Tk()
+-window.geometry = ('700x500')
+-window.title = ('ABC')'''
+-
+-'''from tkinter import*
+-
+-class Image(Frame):
+-    def __init__(self):
+-        # Инициализирую предка этого класса
+-        Frame.__init__(self)
+-        # Устанавливаю заголовок окна
+-        self.master.title("Прямоугольники и треугольники")
+-        # Размещаю на всё окно рамку
+-        self.pack(fill=BOTH, expand=True)
+-
+-        # Создаю объект для рисования (Canvas) по рамке (self)
+-        c = Canvas(self)
+-        # Создаю 3 треугольника. Толщина линии - 2 пикселя
+-        c.create_line(10, 10, 100, 100, 150, 50, 10, 10,
+-                      fill="#1f1", width=2)
+-        c.create_line(150, 10, 150, 100, 180, 200, 150, 10,
+-                      fill="#2e2", width=2)
+-        c.create_line(250, 110, 350, 150, 280, 200, 250, 110,
+-                      fill="#2e2", width=2)
+-
+-        # Рисую 2 прямоугольника.
+-        c.create_rectangle(230, 10, 290, 60,
+-                           outline="#f11", fill="#1f1", width=2)
+-        c.create_rectangle(20, 110, 90, 160,
+-                           outline="#f11", fill="#1f1", width=2)
+-        # Размещаю нарисованное на всё окно
+-        c.pack(fill=BOTH, expand=True)
+-
+-    # Создаю главное окно
+-
+-
+-w = Tk()
+-# Создаю изображение, которое описано выше
+-f = Image()
+-
+-# Устанавливаю размер основного окна
+-w.geometry("400x250")
+-# Запускаю главный цикл обработки событий
+-w.mainloop()'''
+-
+-
+Index: Новая папка (3)/less6.py
+===================================================================
+diff --git a/Новая папка (3)/less6.py b/Новая папка (3)/less6.py
+deleted file mode 100644
+--- a/Новая папка (3)/less6.py	
++++ /dev/null	
+@@ -1,27 +0,0 @@
+-import requests
+-from bs4 import BeautifulSoup
+-from datetime import datetime
+-
+-url = "http://www.cbr.ru/scripts/XML_daily.asp?"
+-today = datetime.today().strftime("%d/%m/%Y")
+-date = f"date_req={today}"
+-responce = requests.get(url+date)
+-xml = BeautifulSoup(responce.content, 'lxml')
+-
+-def get_course(id):
+-    xml1 = xml.find("valute", {'id': id})
+-    return {"value": xml1.value.text, "nominal": xml1.nominal.text, "name": xml1.charcode.text}
+-
+-str_to_num = {
+-    "1": "один",
+-    "2": "два",
+-}
+-
+-file = open(r"/Users/klim/Desktop/Lesson6/Код/valutes.txt", 'a') # rwa
+-file.write(f"{today}\n")
+-for valute in ["R01235", "R01239", "R01375"]:
+-    temp_dict = get_course(valute)
+-    file.write(f"{round(float(temp_dict['value'].replace(',', '.')), 2)} рублей за {temp_dict['nominal']} за {temp_dict['name']}\n")
+-file.close()
+-
+-# 123451
+\ No newline at end of file
+Index: Новая папка (3)/less8.py
+===================================================================
+diff --git a/Новая папка (3)/less8.py b/Новая папка (3)/less8.py
+deleted file mode 100644
+--- a/Новая папка (3)/less8.py	
++++ /dev/null	
+@@ -1,49 +0,0 @@
+-from tkinter import *
+-import requests
+-from bs4 import
+-from datetime import datetime
+-
+-window = Tk()
+-window.title("Курс валют")
+-window.geometry("400x350+300+300")
+-window.resizable(width=False, height=False)
+-
+-url = "http://www.cbr.ru/scripts/XML_daily.asp?"
+-today = datetime.today().strftime("%d/%m/%Y")
+-date = f"date_req={today}"
+-responce = requests.get(url+date)
+-xml = BeautifulSoup(responce.content, 'lxml')
+-
+-def get_course(id):
+-    xml1 = xml.find("valute", {'id': id})
+-    return {"value": xml1.value.text, "nominal": xml1.nominal.text, "name": xml1.charcode.text}
+-
+-img_logo = PhotoImage(file='logo.png')
+-logo = Label(window, image=img_logo)
+-logo.place(x=0, y=0)
+-
+-lab = Label(window, text="Курс валют\n НАШ банк", fg="black", font="Arial 22")
+-lab.place(y=25, x=150)
+-
+-course_info = Label(window, text=f"Курс валют на: {today.replace('/', '.')}", font="Arial 18")
+-course_info.place(y=150, x=90)
+-
+-usd_dict = get_course("R01235")
+-usd_dict["value"] = float(usd_dict["value"].replace(',', '.'))
+-usd_dict["nominal"] = int(usd_dict["nominal"])
+-usd_course = Label(window, text=f"${round(usd_dict['value']/usd_dict['nominal'], 2)}", font="Arial 18")
+-usd_course.place(y=190, x=100)
+-
+-usd_dict = get_course("R01375")
+-usd_dict["value"] = float(usd_dict["value"].replace(',', '.'))
+-usd_dict["nominal"] = int(usd_dict["nominal"])
+-usd_course = Label(window, text=f"¥{round(usd_dict['value']/usd_dict['nominal'], 2)}", font="Arial 18")
+-usd_course.place(y=240, x=100)
+-# file = open(r"/Users/klim/Desktop/Lesson6/Код/valutes.txt", 'a') # rwa
+-# file.write(f"{today}\n")
+-# for valute in ["R01235", "R01239", "R01375"]:
+-#     temp_dict = get_course(valute)
+-#     file.write(f"{round(float(temp_dict['value'].replace(',', '.')), 2)} рублей за {temp_dict['nominal']} за {temp_dict['name']}\n")
+-# file.close()
+-
+-window.mainloop()
+\ No newline at end of file
+Index: Новая папка (3)/4.2.py
+===================================================================
+diff --git a/Новая папка (3)/4.2.py b/Новая папка (3)/4.2.py
+deleted file mode 100644
+--- a/Новая папка (3)/4.2.py	
++++ /dev/null	
+@@ -1,77 +0,0 @@
+-'''from tkinter import*
+-import random
+-
+-class Knight:
+-    def _init_(self, h):
+-        self.x = 70
+-        self.y = h // 2
+-        self.v = 0
+-        self.photo = PhotoImage(file='knight.png')
+-
+-    def up(self, event):
+-        self.v = 3
+-
+-    def down(self, event):
+-        self.v = -3
+-
+-    def stop(self, event):
+-        self.v = 0
+-
+-    
+-window = Tk()
+-
+-w = 600
+-h = 600
+-
+-window.geometry(str(w)+'x'+str(h))
+-canvas = Canvas(window, width=h, height=h)
+-canvas.place(in_=window, x=0, y=0)
+-bg_photo = PhotoImage(file='bg_2.png')
+-canvas.create_image(300, 300, image=bg_photo)
+-
+-knight = Knight(h)
+-
+-def game():
+-    canvas.delete('all')
+-    canvas.create_image(300, 300, image=bg_photo)
+-    
+-    canvas.create_image(knight.x, knight.y, image='knight.photo')
+-    knight.y  += khight.v
+-
+-    canvas.create_image(knight.x, knight.y, image='dragon.photo')
+-    dragon.x -= dragon.v
+-
+-    a = ()
+-
+-
+-    
+-window.bind('<Key-Up>', knight.up)
+-window.bind('<Key-Down>', knight.down)
+-window.bind('<KeyRelease>', knight.stop)
+-
+-
+-window.mainloop()'''
+-
+-from tkinter import*
+-
+-class Image(Frame):
+-    def __init__(self):
+-        Frame.__init__(self)
+-        self.master.title("Прямоугольники и треугольники")
+-        self.pack
+-        c = Canvas(self)
+-        c.create_line(10, 10, 100, 100, 150, 50, 10, 10,fill="#1f1", width=2)
+-        #c.create_line(150, 10, 150, 100, 180, 200, 150, 10, fill="#2e2", width=2)
+-        #c.create_line(250, 110, 350, 150, 280, 200, 250, 110, fill="#2e2", width=2)
+-
+-        c.create_rectangle(230, 10, 290, 60,outline="#f11", fill="#1f1", width=2)
+-        c.create_rectangle(20, 110, 90, 160,outline="#f11", fill="#1f1", width=2)
+-        c.pack(fill=BOTH, expand=True)
+-
+-w = Tk()
+-
+-f = Image()
+-w.geometry('400x250')
+-
+-
+-w.mainloop()
+Index: Новая папка (3)/less10.py
+===================================================================
+diff --git a/Новая папка (3)/less10.py b/Новая папка (3)/less10.py
+deleted file mode 100644
+--- a/Новая папка (3)/less10.py	
++++ /dev/null	
+@@ -1,62 +0,0 @@
+-# Модификаторы доступа
+-# public - можно читать, можно записывать
+-# private __ - нельзя читать и записывать
+-# protected 
+-
+-"""
+-class Human:
+-
+-    def __init__(self, name, sex, age, height, weight):
+-        self.__name = name
+-        self.__sex = sex
+-        self.age = age
+-        self.height = height
+-        self.weight = weight
+-
+-    def set_name(self, name):
+-        self.__name = name
+-
+-    def get_sex(self):
+-        return self.__sex
+-
+-human1 = Human("Klim", "Male", 19, 175, 62)
+-human1.__sex = "Helicopter"
+-print(human1.get_sex())
+-"""
+-
+-import random
+-
+-class Tank:
+-    def __init__(self, model, armor, health, min_damage, max_damage):
+-        self.model = model
+-        self.armor = armor
+-        self.damage = random.randint(min_damage, max_damage)
+-        self.health = health
+-
+-    def print_info(self):
+-        print(f"{self.model} имеет лобовую броню {self.armor}мм при {self.health} ед. здоровья и может нанести {self.damage} урона")
+-
+-    def shot(self, enemy):
+-        if enemy.health <= 0:
+-            print(f"Экипаж танка {enemy.model} уничтожен")
+-        else:
+-            print(f"{self. model} сделал выстрел в {enemy.model}")
+-            enemy.health_down(self.damage)
+-
+-    def health_down(self, damage):
+-        self.health -= damage
+-        self.print_info()
+-
+-class SuperTank(Tank):
+-    def __init__(self, model, armor, health, min_damage, max_damage):
+-        super().__init__(model, armor, health, min_damage, max_damage)
+-        self.force_armor = True
+-
+-    def health_down(self, damage):
+-        super().health_down(damage / 2)
+-
+-tank1 = Tank("T-34", 90, 100, 20, 30)
+-tank2 = Tank("Tiger", 120, 100, 50, 120)
+-tank3 = SuperTank("CoolTank", 200, 100, 50, 70)
+-tank1.shot(tank2)
+-tank1.shot(tank3)
+\ No newline at end of file
+Index: Новая папка (3)/7.2.py
+===================================================================
+diff --git a/Новая папка (3)/7.2.py b/Новая папка (3)/7.2.py
+deleted file mode 100644
+--- a/Новая папка (3)/7.2.py	
++++ /dev/null	
+@@ -1,1 +0,0 @@
+-
+Index: Новая папка (3)/less12.py
+===================================================================
+diff --git a/Новая папка (3)/less12.py b/Новая папка (3)/less12.py
+deleted file mode 100644
+--- a/Новая папка (3)/less12.py	
++++ /dev/null	
+@@ -1,80 +0,0 @@
+-from tkinter import *
+-import random
+-import time
+-
+-class Ball:
+-
+-    def __init__(self, canvas, color, platform):
+-        self.__canvas = canvas
+-        self.__platfrom = platform
+-        self.__oval = canvas.create_oval(200, 200, 215, 215, fill=color)
+-        self.__v_x = random.choice([-3, -2, -1, 1, 2, 3])
+-        self.__v_y = -1
+-        self.__is_end = False
+-
+-    def get_end(self):
+-        return self.__is_end
+-
+-    def draw(self):
+-        self.__canvas.move(self.__oval, self.__v_x, self.__v_y)
+-        pos = self.__canvas.coords(self.__oval)
+-        if self.__touch_platform():
+-            self.__v_y = -3
+-        if pos[1] <= 0:
+-            self.__v_y = 3
+-        if pos[3] >= 400:
+-            self.__is_end = True
+-        if pos[0] <= 0:
+-            self.__v_x = 3
+-        if pos[2] >= 500:
+-            self.__v_x = -3
+-
+-    def __touch_platform(self):
+-        pos_rect = self.__canvas.coords(self.__platfrom.get_rect())
+-        pos_oval = self.__canvas.coords(self.__oval)
+-        if pos_oval[3] <= pos_rect[1]:
+-            if pos_rect[0] <= pos_oval[0] <= pos_rect[3] or pos_rect[0] <= pos_oval[2] <= pos_rect[3]:
+-                return True
+-        return False
+-
+-
+-class Platform:
+-
+-    def __init__(self, canvas, color):
+-        self.__canvas = canvas
+-        self.__rect = canvas.create_rectangle(230, 300, 330, 310, fill=color)
+-        self.__v_x = 0
+-        self.__canvas.bind_all('<KeyPress-Left>', self.__left)
+-        self.__canvas.bind_all('<KeyPress-Right>', self.__right)
+-
+-    def get_rect(self):
+-        return self.__rect
+-
+-    def __left(self, event):
+-        self.__v_x = -2
+-
+-    def __right(self, event):
+-        self.__v_x = 2
+-
+-    def draw(self):
+-        self.__canvas.move(self.__rect, self.__v_x, 0)
+-        pos = self.__canvas.coords(self.__rect)
+-        if pos[0] <= 0 or pos[2] >= 500:
+-            self.__v_x = 0
+-
+-window = Tk()
+-window.title("Pong")
+-window.geometry("500x400")
+-window.resizable(False, False)
+-window.wm_attributes("-topmost", 1)
+-canvas = Canvas(window, width=500, height=400)
+-canvas.pack()
+-
+-platform = Platform(canvas, "green")
+-ball = Ball(canvas, "red", platform)
+-
+-while not ball.get_end():
+-    ball.draw()
+-    platform.draw()
+-    window.update()
+-    time.sleep(0.01)
+Index: adven/profile.html
+===================================================================
+diff --git a/adven/profile.html b/adven/profile.html
+new file mode 100644
+--- /dev/null	
++++ b/adven/profile.html	
+@@ -0,0 +1,58 @@
++<!DOCTYPE html>
++<html lang="en">
++
++<head>
++  <meta charset="UTF-8">
++  <meta http-equiv="X-UA-Compatible" content="IE=edge">
++  <meta name="viewport" content="width=device-width, initial-scale=1.0">
++  <link rel="shortcut icon" href="img/favicon.ico" type="image/x-icon">
++  <link href="css/bootstrap.min.css" rel="stylesheet">
++  <link rel="stylesheet" href="css/fontello.css">
++  <title>Profile</title>
++</head>
++
++<body>
++  <ul class="nav nav-pills sticky-top bg-white nav-fill">
++    <li class="nav-item">
++      <a class="nav-link" href="index.html">
++        <span style="font-weight: bold;">Главная</span>
++      </a>
++    </li>
++    <li class="nav-item">
++      <a class="nav-link" href="top-sellers.html"><span style="font-weight: bold;">Топ продавцов</span>
++      </a>
++    </li>
++    <li class="nav-item">
++      <a class="nav-link" href="advertisement-post.html">
++        <span style="font-weight: bold;">Разместить объявление</span>
++      </a>
++    </li>
++    <li class="nav-item">
++      <a class="nav-link" href="register.html">
++        <span style="font-weight: bold;">Регистрация</span>
++      </a>
++    </li>
++    <li class="nav-item">
++      <a class="nav-link" href="login.html">
++        <span style="font-weight: bold;">Войти</span>
++      </a>
++    </li>
++    <li class="nav-item">
++      <a class="nav-link active" aria-current="page" href="profile.html">
++        <span style="font-weight: bold;">Профиль</span>
++      </a>
++    </li>
++    <li class="nav-item">
++      <a class="nav-link" href="#">
++        <span style="font-weight: bold;">Выйти</span>
++      </a>
++    </li>
++  </ul>
++<div class="col" style="margin: 50px;">
++  <div class="display-2">
++    <span class="badge bg-primary">Сейчас вы находитесь на сайте под ником "username".</span>
++  </div>
++</div>
++<script src="js/bootstrap.bundle.min.js"></script>
++</body>
++</html>
+\ No newline at end of file
+Index: adven/advertisement.html
+===================================================================
+diff --git a/adven/advertisement.html b/adven/advertisement.html
+new file mode 100644
+--- /dev/null	
++++ b/adven/advertisement.html	
+@@ -0,0 +1,122 @@
++<!DOCTYPE html>
++<html lang="en">
++
++<head>
++  <meta charset="UTF-8">
++  <meta http-equiv="X-UA-Compatible" content="IE=edge">
++  <meta name="viewport" content="width=device-width, initial-scale=1.0">
++  <link rel="shortcut icon" href="img/favicon.ico" type="image/x-icon">
++  <link href="css/bootstrap.min.css" rel="stylesheet">
++  <link rel="stylesheet" href="css/fontello.css">
++  <title>Advertisement</title>
++</head>
++
++<body>
++  <ul class="nav nav-pills sticky-top bg-white nav-fill">
++    <li class="nav-item">
++      <a class="nav-link" href="index.html">
++        <span style="font-weight: bold;">Главная</span>
++      </a>
++    </li>
++    <li class="nav-item">
++      <a class="nav-link" href="top-sellers.html"><span style="font-weight: bold;">Топ продавцов</span>
++      </a>
++    </li>
++    <li class="nav-item">
++      <a class="nav-link" href="advertisement-post.html">
++        <span style="font-weight: bold;">Разместить объявление</span>
++      </a>
++    </li>
++    <li class="nav-item">
++      <a class="nav-link" href="register.html">
++        <span style="font-weight: bold;">Регистрация</span>
++      </a>
++    </li>
++    <li class="nav-item">
++      <a class="nav-link" href="login.html">
++        <span style="font-weight: bold;">Войти</span>
++      </a>
++    </li>
++    <li class="nav-item">
++      <a class="nav-link" href="profile.html">
++        <span style="font-weight: bold;">Профиль</span>
++      </a>
++    </li>
++    <li class="nav-item">
++      <a class="nav-link" href="#">
++        <span style="font-weight: bold;">Выйти</span>
++      </a>
++    </li>
++  </ul>
++
++  <div class="container" style="margin: 50px;">
++    <div class="display-2">
++      <span class="badge bg-primary">Объявление пользователя "username"</span>
++    </div>
++  </div>
++  <div class="col offset-2">
++    <div class="card mb-2" style="max-width: 1200px; margin-top: 20px;">
++      <div class="row g-0">
++        <div class="col-md-4">
++          <a href="#" class="nav-link">
++            <img src="img/adv.png" class="img-fluid rounded-start" alt="Card title">
++          </a>
++        </div>
++        <div class="col">
++          <div class="card-body">
++            <h5 class="card-title">
++              <a href="#" class="nav-link"><strong>Продам гараж</strong></a>
++            </h5>
++            <p class="card-text">
++              Lorem ipsum dolor sit amet, consectetur adipisicing elit. Suscipit eum aut commodi dolores
++              praesentium fugiat! Maxime perspiciatis iste, voluptas tenetur voluptatem at beatae, aliquid
++              libero odit ab accusamus tempore assumenda.
++              Hic asperiores pariatur recusandae sapiente doloremque illo laudantium placeat sed fugit!
++              Dolorem nulla quaerat doloremque odit impedit unde esse dolorum tenetur quos error! Iure
++              quas, illo expedita sed suscipit ullam.
++              Illo quam odio, quas laborum natus error doloremque totam maiores dolorum fugit aliquam, sit
++              numquam impedit praesentium facilis amet perspiciatis facere rem magnam consectetur, nobis
++              est. Qui quod fuga illum.
++            </p>
++            <span>Автор: "username"</span>
++            <p class="card-text"><small class="text-muted">Размещено: "дата"</small></p>
++          </div>
++        </div>
++      </div>
++    </div>
++  </div>
++  <footer style="padding: 100px; min-height: 300px;" class="bg-primary">
++    <nav class="navbar navbar-expand-sm navbar-dark">
++      <a class="navbar-brand" href="#">Добавьте</a>
++      <button class="navbar-toggler d-lg-none" type="button" data-bs-toggle="collapse"
++        data-bs-target="#collapsibleNavId" aria-controls="collapsibleNavId" aria-expanded="false"
++        aria-label="Toggle navigation"></button>
++      <div class="collapse navbar-collapse" id="collapsibleNavId">
++        <ul class="navbar-nav me-auto mt-2 mt-lg-0">
++          <li class="nav-item">
++            <a class="nav-link active" href="#" aria-current="page">сюда<span
++                class="visually-hidden">(current)</span></a>
++          </li>
++          <li class="nav-item">
++            <a class="nav-link" href="#">что</a>
++          </li>
++          <li class="nav-item dropdown">
++            <a class="nav-link dropdown-toggle" href="#" id="dropdownId" data-bs-toggle="dropdown" aria-haspopup="true"
++              aria-expanded="false">хотите</a>
++            <div class="dropdown-menu" aria-labelledby="dropdownId">
++              <a class="dropdown-item" href="#">например</a>
++              <a class="dropdown-item" href="#">ссылки на социальные сети</a>
++            </div>
++          </li>
++        </ul>
++        <form class="d-flex my-2 my-lg-0">
++          <input class="form-control me-sm-2" type="text" placeholder="Search">
++          <button class="btn btn-outline-light my-2 my-sm-0" type="submit">Search</button>
++        </form>
++      </div>
++    </nav>
++  </footer>
++  <script src="js/bootstrap.bundle.min.js"></script>
++</body>
++
++</html>
+\ No newline at end of file
+Index: adven/advertisement-post.html
+===================================================================
+diff --git a/adven/advertisement-post.html b/adven/advertisement-post.html
+new file mode 100644
+--- /dev/null	
++++ b/adven/advertisement-post.html	
+@@ -0,0 +1,112 @@
++<!DOCTYPE html>
++<html lang="en">
++
++<head>
++  <meta charset="UTF-8">
++  <meta http-equiv="X-UA-Compatible" content="IE=edge">
++  <meta name="viewport" content="width=device-width, initial-scale=1.0">
++  <link rel="shortcut icon" href="img/favicon.ico" type="image/x-icon">
++  <link href="css/bootstrap.min.css" rel="stylesheet">
++  <link rel="stylesheet" href="css/fontello.css">
++  <title>Advertisement-post</title>
++</head>
++
++<body>
++
++
++  <ul class="nav nav-pills sticky-top bg-white nav-fill">
++    <li class="nav-item">
++      <a class="nav-link" href="index.html">
++        <span style="font-weight: bold;">Главная</span>
++      </a>
++    </li>
++    <li class="nav-item">
++      <a class="nav-link" href="top-sellers.html"><span style="font-weight: bold;">Топ продавцов</span>
++      </a>
++    </li>
++    <li class="nav-item">
++      <a class="nav-link active" aria-current="page" href="advertisement-post.html">
++        <span style="font-weight: bold;">Разместить объявление</span>
++      </a>
++    </li>
++    <li class="nav-item">
++      <a class="nav-link" href="register.html">
++        <span style="font-weight: bold;">Регистрация</span>
++      </a>
++    </li>
++    <li class="nav-item">
++      <a class="nav-link" href="login.html">
++        <span style="font-weight: bold;">Войти</span>
++      </a>
++    </li>
++    <li class="nav-item">
++      <a class="nav-link" href="profile.html">
++        <span style="font-weight: bold;">Профиль</span>
++      </a>
++    </li>
++    <li class="nav-item">
++      <a class="nav-link" href="#">
++        <span style="font-weight: bold;">Выйти</span>
++      </a>
++    </li>
++  </ul>
++  <div class="row">
++    <div class="col" style="margin: 50px;">
++      <div class="display-2">
++        <span class="badge bg-primary">Сообщите миру об этом в этой форме</span>
++      </div>
++    </div>
++  </div>
++  <div class="container">
++    <form method="post">
++      <div class="row mb-3">
++        <div class="col">
++          <label class="col-sm-4 col-form-label offset-4">Title</label>
++          <div class="col-sm-4 offset-4 w-25">
++            <input type="text" class="form-control form-control-lg">
++          </div>
++        </div>
++      </div>
++      <div class="row mb-3">
++        <div class="col">
++          <label class="col-sm-4 col-form-label offset-4">Description</label>
++          <div class="col-sm-4 offset-4 w-25">
++              <label for="" class="form-label"></label>
++              <textarea class="form-control" name="" id="" rows="3"></textarea>
++          </div>
++        </div>
++      </div>
++      <div class="row mb-3">
++        <div class="col">
++          <label class="col-sm-4 col-form-label offset-4">Photo</label>
++          <div class="col-sm-4 offset-4 w-25">
++            <input type="file" class="form-control form-control-lg">
++          </div>
++        </div>
++      </div>
++      <div class="row mb-3">
++        <div class="col">
++          <label class="col-sm-4 col-form-label offset-4">Price</label>
++          <div class="col-sm-4 offset-4 w-25">
++            <input type="text" class="form-control form-control-lg">
++          </div>
++        </div>
++      </div>
++      <div class="row mb-3">
++        <div class="col">
++          <div class="offset-4 w-25">
++            <input type="checkbox" class="form-check-input">
++            <label class="form-check-label">Auction</label>
++          </div>
++        </div>
++      </div>
++      <div class="row mb-3 offset-sm-5">
++        <div class="col">
++          <button type="submit" class="btn btn-success">Принять</button>
++        </div>
++      </div>
++    </form>
++  </div>
++  <script src="js/bootstrap.bundle.min.js"></script>
++</body>
++</html>
+\ No newline at end of file
+Index: DJANGO/advertisement/manage.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/DJANGO/advertisement/manage.py b/DJANGO/advertisement/manage.py
+new file mode 100644
+--- /dev/null	
++++ b/DJANGO/advertisement/manage.py	
+@@ -0,0 +1,22 @@
++#!/usr/bin/env python
++"""Django's command-line utility for administrative tasks."""
++import os
++import sys
++
++
++def main():
++    """Run administrative tasks."""
++    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'advertisement.settings')
++    try:
++        from django.core.management import execute_from_command_line
++    except ImportError as exc:
++        raise ImportError(
++            "Couldn't import Django. Are you sure it's installed and "
++            "available on your PYTHONPATH environment variable? Did you "
++            "forget to activate a virtual environment?"
++        ) from exc
++    execute_from_command_line(sys.argv)
++
++
++if __name__ == '__main__':
++    main()
+Index: adven/base.html
+===================================================================
+diff --git a/adven/base.html b/adven/base.html
+new file mode 100644
+--- /dev/null	
++++ b/adven/base.html	
+@@ -0,0 +1,124 @@
++{% load static %}
++<!DOCTYPE html>
++<html lang="en">
++
++<head>
++  <meta charset="UTF-8">
++  <meta http-equiv="X-UA-Compatible" content="IE=edge">
++  <meta name="viewport" content="width=device-width, initial-scale=1.0">
++  <link rel="shortcut icon" href="img/favicon.ico" type="image/x-icon">
++  <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
++  <link rel="stylesheet" href="{% static 'css/fontello.css' %}">
++  <title>Index</title>
++</head>
++<body>
++{% block content %}
++<body>
++    <ul class="nav nav-pills sticky-top bg-white nav-fill">
++      <li class="nav-item">
++        <a class="nav-link"  href="{% url 'main-page' %}">
++          <span style="font-weight: bold;">Главная</span>
++        </a>
++      </li>
++      <li class="nav-item">
++        <a class="nav-link active" aria-current="page" href="{% url 'topsellers' %}"><span style="font-weight: bold;">Топ продавцов</span>
++        </a>
++      </li>
++      <li class="nav-item">
++        <a class="nav-link" href="advertisement-post.html">
++          <span style="font-weight: bold;">Разместить объявление</span>
++        </a>
++      </li>
++      <li class="nav-item">
++        <a class="nav-link" href="register.html">
++          <span style="font-weight: bold;">Регистрация</span>
++        </a>
++      </li>
++      <li class="nav-item">
++        <a class="nav-link" href="login.html">
++          <span style="font-weight: bold;">Войти</span>
++        </a>
++      </li>
++      <li class="nav-item">
++        <a class="nav-link" href="profile.html">
++          <span style="font-weight: bold;">Профиль</span>
++        </a>
++      </li>
++      <li class="nav-item">
++        <a class="nav-link" href="#">
++          <span style="font-weight: bold;">Выйти</span>
++        </a>
++      </li>
++    </ul>
++    <div class="row">
++      <div class="col" style="margin: 50px;">
++        <div class="display-2">
++          <span class="badge bg-primary">Топ продавцов на сайте</span>
++        </div>
++      </div>
++    </div>
++    <div class="container" style="min-height: 452px">
++      <ul class="list-group list-group-numbered">
++  
++        <li class="list-group-item d-flex justify-content-between align-items-start">
++          <div class="ms-2 me-auto">
++            <div class="fw-bold">Ваня
++            </div>
++          </div>
++          <span class="badge bg-primary rounded-pill">2</span>
++        </li>
++        <li class="list-group-item d-flex justify-content-between align-items-start">
++          <div class="ms-2 me-auto">
++            <div class="fw-bold">Петя
++            </div>
++          </div>
++          <span class="badge bg-primary rounded-pill">3</span>
++        </li>
++        <li class="list-group-item d-flex justify-content-between align-items-start">
++          <div class="ms-2 me-auto">
++            <div class="fw-bold">Гоша
++            </div>
++          </div>
++          <span class="badge bg-primary rounded-pill">3</span>
++        </li>
++      </ul>
++    </div>
++    <footer style="padding: 100px;" class="bg-primary">
++      <nav class="navbar navbar-expand-sm navbar-dark">
++        <a class="navbar-brand" href="#">Добавьте</a>
++        <button class="navbar-toggler d-lg-none" type="button" data-bs-toggle="collapse"
++          data-bs-target="#collapsibleNavId" aria-controls="collapsibleNavId" aria-expanded="false"
++          aria-label="Toggle navigation"></button>
++        <div class="collapse navbar-collapse" id="collapsibleNavId">
++          <ul class="navbar-nav me-auto mt-2 mt-lg-0">
++            <li class="nav-item">
++              <a class="nav-link active" href="#" aria-current="page">сюда<span
++                  class="visually-hidden">(current)</span></a>
++            </li>
++            <li class="nav-item">
++              <a class="nav-link" href="#">что</a>
++            </li>
++            <li class="nav-item dropdown">
++              <a class="nav-link dropdown-toggle" href="#" id="dropdownId" data-bs-toggle="dropdown" aria-haspopup="true"
++                aria-expanded="false">хотите</a>
++              <div class="dropdown-menu" aria-labelledby="dropdownId">
++                <a class="dropdown-item" href="#">например</a>
++                <a class="dropdown-item" href="#">ссылки на социальные сети</a>
++              </div>
++            </li>
++          </ul>
++          <form class="d-flex my-2 my-lg-0">
++            <input class="form-control me-sm-2" type="text" placeholder="Search">
++            <button class="btn btn-outline-light my-2 my-sm-0" type="submit">Search</button>
++          </form>
++        </div>
++      </nav>
++    </footer>
++    <script src="js/bootstrap.bundle.min.js"></script>
++  </body>
++  
++  </html>
++{% endblock %}
++    
++</body>
++</html>
+\ No newline at end of file
+Index: adven/index.html
+===================================================================
+diff --git a/adven/index.html b/adven/index.html
+new file mode 100644
+--- /dev/null	
++++ b/adven/index.html	
+@@ -0,0 +1,221 @@
++<!DOCTYPE html>
++<html lang="en">
++
++<head>
++  <meta charset="UTF-8">
++  <meta http-equiv="X-UA-Compatible" content="IE=edge">
++  <meta name="viewport" content="width=device-width, initial-scale=1.0">
++  <link rel="shortcut icon" href="img/favicon.ico" type="image/x-icon">
++  <link href="css/bootstrap.min.css" rel="stylesheet">
++  <link rel="stylesheet" href="css/fontello.css">
++  <title>Index</title>
++</head>
++
++<body>
++<ul class="nav nav-pills sticky-top bg-white nav-fill">
++  <li class="nav-item">
++    <a class="nav-link active" aria-current="page" href="index.html">
++      <span style="font-weight: bold;">Главная</span>
++    </a>
++  </li>
++  <li class="nav-item">
++    <a class="nav-link" href="top-sellers.html"><span style="font-weight: bold;">Топ продавцов</span>
++    </a>
++  </li>
++  <li class="nav-item">
++    <a class="nav-link" href="advertisement-post.html">
++      <span style="font-weight: bold;">Разместить объявление</span>
++    </a>
++  </li>
++  <li class="nav-item">
++    <a class="nav-link" href="register.html">
++      <span style="font-weight: bold;">Регистрация</span>
++    </a>
++  </li>
++  <li class="nav-item">
++    <a class="nav-link" href="login.html">
++      <span style="font-weight: bold;">Войти</span>
++    </a>
++  </li>
++  <li class="nav-item">
++    <a class="nav-link" href="profile.html">
++      <span style="font-weight: bold;">Профиль</span>
++    </a>
++  </li>
++  <li class="nav-item">
++    <a class="nav-link" href="#">
++      <span style="font-weight: bold;">Выйти</span>
++    </a>
++  </li>
++</ul>
++
++<div id="carouselExampleControls" class="carousel slide bg-primary" data-bs-ride="carousel">
++  <div class="carousel-inner">
++    <div class="carousel-item active">
++      <img src="img/adv.png" class="mx-auto d-block w-33" alt="...">
++    </div>
++    <div class="carousel-item">
++      <img src="img/adv.png" class="mx-auto d-block w-33" alt="...">
++    </div>
++    <div class="carousel-item">
++      <img src="img/adv.png" class="mx-auto d-block w-33" alt="...">
++    </div>
++  </div>
++  <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleControls" data-bs-slide="prev">
++    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
++    <span class="visually-hidden">Предыдущий</span>
++  </button>
++  <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleControls" data-bs-slide="next">
++    <span class="carousel-control-next-icon" aria-hidden="true"></span>
++    <span class="visually-hidden">Следующий</span>
++  </button>
++</div>
++<div class="container" style="margin: 50px;">
++  <div class="display-2">
++    <span class="badge bg-primary">В центре внимания</span>
++  </div>
++</div>
++<div class="container">
++  <div class="row">
++    <ul class="nav nav-tabs bg-white">
++      <li class="nav-item">
++        <a class="nav-link active" aria-current="page" href="#">Проверенные продавцы</a>
++      </li>
++      <li class="nav-item">
++        <a class="nav-link" href="#">Новинки</a>
++      </li>
++      <li class="nav-item">
++        <a class="nav-link" href="#">Избранное</a>
++      </li>
++      <li class="nav-item">
++        <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Еще что-нибудь</a>
++      </li>
++    </ul>
++    <form class="row g-3">
++      <div class="col-auto w-50">
++        <input type="text" class="form-control">
++      </div>
++      <div class="col-auto">
++        <button type="submit" class="btn btn-success mb-3">Найти</button>
++      </div>
++    </form>
++  </div>
++  <div class="col">
++    <div class="card mb-2" style="max-width: 1200px; margin-top: 20px;">
++      <div class="row g-0">
++        <div class="col-md-4">
++          <a href="advertisement.html" class="nav-link">
++            <img src="img/adv.png" class="img-fluid rounded-start" alt="Card title">
++          </a>
++        </div>
++        <div class="col-md-8">
++          <div class="card-body">
++            <h5 class="card-title">
++              <a href="advertisement.html" class="nav-link"><strong>Продаю балкон</strong></a>
++            </h5>
++            <a href="advertisement.html" class="nav-link">
++              <p class="card-text">
++                Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quas, nulla eos neque dolorum quis aliquid
++                deleniti molestias, nobis debitis expedita, fugiat ea. Delectus harum quo dolores modi cupiditate in
++                tempore. Lorem ipsum dolor sit amet consectetur adipisicing elit. Voluptas quis similique quas
++                architecto doloremque culpa consequatur excepturi provident quo fugit repudiandae inventore quae ea
++                sequi, recusandae aliquid veritatis rerum quibusdam?
++              </p>
++              <span>Автор: Никнейм автора объявления</span>
++              <p class="card-text"><small class="text-muted">Размещено: здесь должна стоять дата</small></p>
++            </a>
++          </div>
++        </div>
++      </div>
++    </div>
++    <div class="card mb-2" style="max-width: 1200px; margin-top: 20px;">
++      <div class="row g-0">
++        <div class="col-md-4">
++          <a href="advertisement.html" class="nav-link">
++            <img src="img/adv.png" class="img-fluid rounded-start" alt="Card title">
++          </a>
++        </div>
++        <div class="col-md-8">
++          <div class="card-body">
++            <h5 class="card-title">
++              <a href="advertisement.html" class="nav-link"><strong>Продам гараж</strong></a>
++            </h5>
++            <a href="advertisement.html" class="nav-link">
++              <p class="card-text">
++                Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quas, nulla eos neque dolorum quis aliquid
++                deleniti molestias, nobis debitis expedita, fugiat ea. Delectus harum quo dolores modi cupiditate in
++                tempore. Lorem ipsum dolor sit amet consectetur adipisicing elit. Voluptas quis similique quas
++                architecto doloremque culpa consequatur excepturi provident quo fugit repudiandae inventore quae ea
++                sequi, recusandae aliquid veritatis rerum quibusdam?
++              </p>
++              <span>Автор: Никнейм автора объявления</span>
++              <p class="card-text"><small class="text-muted">Размещено: здесь должна стоять дата</small></p>
++            </a>
++          </div>
++        </div>
++      </div>
++    </div>
++    <div class="card mb-2" style="max-width: 1200px; margin-top: 20px;">
++      <div class="row g-0">
++        <div class="col-md-4">
++          <a href="advertisement.html" class="nav-link">
++            <img src="img/adv.png" class="img-fluid rounded-start" alt="Card title">
++          </a>
++        </div>
++        <div class="col-md-8">
++          <div class="card-body">
++            <h5 class="card-title">
++              <a href="advertisement.html" class="nav-link"><strong>Куплю баню</strong></a>
++            </h5>
++            <a href="advertisement.html" class="nav-link">
++              <p class="card-text">
++                Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quas, nulla eos neque dolorum quis aliquid
++                deleniti molestias, nobis debitis expedita, fugiat ea. Delectus harum quo dolores modi cupiditate in
++                tempore. Lorem ipsum dolor sit amet consectetur adipisicing elit. Voluptas quis similique quas
++                architecto doloremque culpa consequatur excepturi provident quo fugit repudiandae inventore quae ea
++                sequi, recusandae aliquid veritatis rerum quibusdam?
++              </p>
++              <span>Автор: Никнейм автора объявления</span>
++              <p class="card-text"><small class="text-muted">Размещено: здесь должна стоять дата</small></p>
++            </a>
++          </div>
++        </div>
++      </div>
++    </div>
++  </div>
++</div>
++<footer style="padding: 100px;" class="bg-primary">
++  <nav class="navbar navbar-expand-sm navbar-dark">
++    <a class="navbar-brand" href="#">Добавьте</a>
++    <button class="navbar-toggler d-lg-none" type="button" data-bs-toggle="collapse"
++            data-bs-target="#collapsibleNavId" aria-controls="collapsibleNavId" aria-expanded="false"
++            aria-label="Toggle navigation"></button>
++    <div class="collapse navbar-collapse" id="collapsibleNavId">
++      <ul class="navbar-nav me-auto mt-2 mt-lg-0">
++        <li class="nav-item">
++          <a class="nav-link active" href="#" aria-current="page">сюда<span
++                  class="visually-hidden">(current)</span></a>
++        </li>
++        <li class="nav-item">
++          <a class="nav-link" href="#">что</a>
++        </li>
++        <li class="nav-item dropdown">
++          <a class="nav-link dropdown-toggle" href="#" id="dropdownId" data-bs-toggle="dropdown" aria-haspopup="true"
++             aria-expanded="false">хотите</a>
++          <div class="dropdown-menu" aria-labelledby="dropdownId">
++            <a class="dropdown-item" href="#">например</a>
++            <a class="dropdown-item" href="#">ссылки на социальные сети</a>
++          </div>
++        </li>
++      </ul>
++      <form class="d-flex my-2 my-lg-0">
++        <input class="form-control me-sm-2" type="text" placeholder="Search">
++        <button class="btn btn-outline-light my-2 my-sm-0" type="submit">Search</button>
++      </form>
++    </div>
++  </nav>
++</footer>
++<script src="js/bootstrap.bundle.min.js"></script>
++</body>
++
++</html>
+\ No newline at end of file
+Index: adven/login.html
+===================================================================
+diff --git a/adven/login.html b/adven/login.html
+new file mode 100644
+--- /dev/null	
++++ b/adven/login.html	
+@@ -0,0 +1,87 @@
++<!DOCTYPE html>
++<html lang="en">
++
++<head>
++  <meta charset="UTF-8">
++  <meta http-equiv="X-UA-Compatible" content="IE=edge">
++  <meta name="viewport" content="width=device-width, initial-scale=1.0">
++  <link rel="shortcut icon" href="img/favicon.ico" type="image/x-icon">
++  <link href="css/bootstrap.min.css" rel="stylesheet">
++  <link rel="stylesheet" href="css/fontello.css">
++  <title>Login</title>
++</head>
++
++<body>
++
++
++  <ul class="nav nav-pills sticky-top bg-white nav-fill">
++    <li class="nav-item">
++      <a class="nav-link" href="index.html">
++        <span style="font-weight: bold;">Главная</span>
++      </a>
++    </li>
++    <li class="nav-item">
++      <a class="nav-link" href="top-sellers.html"><span style="font-weight: bold;">Топ продавцов</span>
++      </a>
++    </li>
++    <li class="nav-item">
++      <a class="nav-link" href="advertisement-post.html">
++        <span style="font-weight: bold;">Разместить объявление</span>
++      </a>
++    </li>
++    <li class="nav-item">
++      <a class="nav-link" href="register.html">
++        <span style="font-weight: bold;">Регистрация</span>
++      </a>
++    </li>
++    <li class="nav-item">
++      <a class="nav-link active" aria-current="page" href="login.html">
++        <span style="font-weight: bold;">Войти</span>
++      </a>
++    </li>
++    <li class="nav-item">
++      <a class="nav-link" href="profile.html">
++        <span style="font-weight: bold;">Профиль</span>
++      </a>
++    </li>
++    <li class="nav-item">
++      <a class="nav-link" href="#">
++        <span style="font-weight: bold;">Выйти</span>
++      </a>
++    </li>
++  </ul>
++  <div class="container">
++  <div class="row">
++    <div class="col-8" style="margin: 50px;">
++      <div class="display-2">
++        <span class="badge bg-primary">Страница авторизации пользователя</span>
++      </div>
++    </div>
++  </div>
++    <form method="post">
++      <div class="row mb-3">
++        <div class="col">
++          <label class="col-sm-4 col-form-label offset-4">Username</label>
++          <div class="col-sm-4 offset-4 w-25">
++            <input type="text" class="form-control form-control-lg">
++          </div>
++        </div>
++      </div>
++      <div class="row mb-3">
++        <div class="col">
++          <label class="col-sm-4 col-form-label offset-4">Password</label>
++          <div class="col-sm-4 offset-4 w-25">
++            <input type="password" class="form-control form-control-lg">
++          </div>
++        </div>
++      </div>
++      <div class="row mb-3 offset-sm-5">
++        <div class="col">
++          <button type="submit" class="btn btn-success">Принять</button>
++        </div>
++      </div>
++    </form>
++  </div>
++  <script src="js/bootstrap.bundle.min.js"></script>
++</body>
++</html>
+Index: adven/top-sellers.html
+===================================================================
+diff --git a/adven/top-sellers.html b/adven/top-sellers.html
+new file mode 100644
+--- /dev/null	
++++ b/adven/top-sellers.html	
+@@ -0,0 +1,118 @@
++<!DOCTYPE html>
++<html lang="en">
++
++<head>
++  <meta charset="UTF-8">
++  <meta http-equiv="X-UA-Compatible" content="IE=edge">
++  <meta name="viewport" content="width=device-width, initial-scale=1.0">
++  <link rel="shortcut icon" href="img/favicon.ico" type="image/x-icon">
++  <link href="css/bootstrap.min.css" rel="stylesheet">
++  <link rel="stylesheet" href="css/fontello.css">
++  <title>Index</title>
++</head>
++
++<body>
++  <ul class="nav nav-pills sticky-top bg-white nav-fill">
++    <li class="nav-item">
++      <a class="nav-link"  href="index.html">
++        <span style="font-weight: bold;">Главная</span>
++      </a>
++    </li>
++    <li class="nav-item">
++      <a class="nav-link active" aria-current="page" href="top-sellers.html"><span style="font-weight: bold;">Топ продавцов</span>
++      </a>
++    </li>
++    <li class="nav-item">
++      <a class="nav-link" href="advertisement-post.html">
++        <span style="font-weight: bold;">Разместить объявление</span>
++      </a>
++    </li>
++    <li class="nav-item">
++      <a class="nav-link" href="register.html">
++        <span style="font-weight: bold;">Регистрация</span>
++      </a>
++    </li>
++    <li class="nav-item">
++      <a class="nav-link" href="login.html">
++        <span style="font-weight: bold;">Войти</span>
++      </a>
++    </li>
++    <li class="nav-item">
++      <a class="nav-link" href="profile.html">
++        <span style="font-weight: bold;">Профиль</span>
++      </a>
++    </li>
++    <li class="nav-item">
++      <a class="nav-link" href="#">
++        <span style="font-weight: bold;">Выйти</span>
++      </a>
++    </li>
++  </ul>
++  <div class="row">
++    <div class="col" style="margin: 50px;">
++      <div class="display-2">
++        <span class="badge bg-primary">Топ продавцов на сайте</span>
++      </div>
++    </div>
++  </div>
++  <div class="container" style="min-height: 452px">
++    <ul class="list-group list-group-numbered">
++
++      <li class="list-group-item d-flex justify-content-between align-items-start">
++        <div class="ms-2 me-auto">
++          <div class="fw-bold">Ваня
++          </div>
++        </div>
++        <span class="badge bg-primary rounded-pill">2</span>
++      </li>
++      <li class="list-group-item d-flex justify-content-between align-items-start">
++        <div class="ms-2 me-auto">
++          <div class="fw-bold">Петя
++          </div>
++        </div>
++        <span class="badge bg-primary rounded-pill">3</span>
++      </li>
++      <li class="list-group-item d-flex justify-content-between align-items-start">
++        <div class="ms-2 me-auto">
++          <div class="fw-bold">Гоша
++          </div>
++        </div>
++        <span class="badge bg-primary rounded-pill">3</span>
++      </li>
++    </ul>
++  </div>
++  <footer style="padding: 100px;" class="bg-primary">
++    <nav class="navbar navbar-expand-sm navbar-dark">
++      <a class="navbar-brand" href="#">Добавьте</a>
++      <button class="navbar-toggler d-lg-none" type="button" data-bs-toggle="collapse"
++        data-bs-target="#collapsibleNavId" aria-controls="collapsibleNavId" aria-expanded="false"
++        aria-label="Toggle navigation"></button>
++      <div class="collapse navbar-collapse" id="collapsibleNavId">
++        <ul class="navbar-nav me-auto mt-2 mt-lg-0">
++          <li class="nav-item">
++            <a class="nav-link active" href="#" aria-current="page">сюда<span
++                class="visually-hidden">(current)</span></a>
++          </li>
++          <li class="nav-item">
++            <a class="nav-link" href="#">что</a>
++          </li>
++          <li class="nav-item dropdown">
++            <a class="nav-link dropdown-toggle" href="#" id="dropdownId" data-bs-toggle="dropdown" aria-haspopup="true"
++              aria-expanded="false">хотите</a>
++            <div class="dropdown-menu" aria-labelledby="dropdownId">
++              <a class="dropdown-item" href="#">например</a>
++              <a class="dropdown-item" href="#">ссылки на социальные сети</a>
++            </div>
++          </li>
++        </ul>
++        <form class="d-flex my-2 my-lg-0">
++          <input class="form-control me-sm-2" type="text" placeholder="Search">
++          <button class="btn btn-outline-light my-2 my-sm-0" type="submit">Search</button>
++        </form>
++      </div>
++    </nav>
++  </footer>
++  <script src="js/bootstrap.bundle.min.js"></script>
++</body>
++
++</html>
+\ No newline at end of file
+Index: adven/register.html
+===================================================================
+diff --git a/adven/register.html b/adven/register.html
+new file mode 100644
+--- /dev/null	
++++ b/adven/register.html	
+@@ -0,0 +1,112 @@
++<!DOCTYPE html>
++<html lang="en">
++
++<head>
++  <meta charset="UTF-8">
++  <meta http-equiv="X-UA-Compatible" content="IE=edge">
++  <meta name="viewport" content="width=device-width, initial-scale=1.0">
++  <link rel="shortcut icon" href="img/favicon.ico" type="image/x-icon">
++  <link href="css/bootstrap.min.css" rel="stylesheet">
++  <link rel="stylesheet" href="css/fontello.css">
++  <title>Register</title>
++</head>
++
++<body>
++
++
++  <ul class="nav nav-pills sticky-top bg-white nav-fill">
++    <li class="nav-item">
++      <a class="nav-link" href="index.html">
++        <span style="font-weight: bold;">Главная</span>
++      </a>
++    </li>
++    <li class="nav-item">
++      <a class="nav-link" href="top-sellers.html"><span style="font-weight: bold;">Топ продавцов</span>
++      </a>
++    </li>
++    <li class="nav-item">
++      <a class="nav-link" href="advertisement-post.html">
++        <span style="font-weight: bold;">Разместить объявление</span>
++      </a>
++    </li>
++    <li class="nav-item">
++      <a class="nav-link active" aria-current="page" href="register.html">
++        <span style="font-weight: bold;">Регистрация</span>
++      </a>
++    </li>
++    <li class="nav-item">
++      <a class="nav-link" href="login.html">
++        <span style="font-weight: bold;">Войти</span>
++      </a>
++    </li>
++    <li class="nav-item">
++      <a class="nav-link" href="profile.html">
++        <span style="font-weight: bold;">Профиль</span>
++      </a>
++    </li>
++    <li class="nav-item">
++      <a class="nav-link" href="#">
++        <span style="font-weight: bold;">Выйти</span>
++      </a>
++    </li>
++  </ul>
++  <div class="container">
++  <div class="row">
++    <div class="col" style="margin: 50px;">
++      <div class="display-2">
++        <span class="badge bg-primary">Страница регистрации пользователя</span>
++      </div>
++    </div>
++  </div>
++    <form method="post">
++      <div class="row mb-3">
++        <div class="col">
++          <label class="col-sm-4 col-form-label offset-4">Username</label>
++          <div class="col-sm-4 offset-4 w-25">
++            <input type="text" class="form-control form-control-lg">
++          </div>
++        </div>
++      </div>
++      <div class="row mb-3">
++        <div class="col">
++          <label class="col-sm-4 col-form-label offset-4">Name</label>
++          <div class="col-sm-4 offset-4 w-25">
++            <input type="text" class="form-control form-control-lg">
++          </div>
++        </div>
++      </div>
++      <div class="row mb-3">
++        <div class="col">
++          <label class="col-sm-4 col-form-label offset-4">Surname</label>
++          <div class="col-sm-4 offset-4 w-25">
++            <input type="text" class="form-control form-control-lg">
++          </div>
++        </div>
++      </div>
++      <div class="row mb-3">
++        <div class="col">
++          <label class="col-sm-4 col-form-label offset-4">Password</label>
++          <div class="col-sm-4 offset-4 w-25">
++            <input type="password" class="form-control form-control-lg">
++          </div>
++        </div>
++      </div>
++      <div class="row mb-3">
++        <div class="col">
++          <label class="col-sm-4 col-form-label offset-4">Password confirmation</label>
++          <div class="col-sm-4 offset-4 w-25">
++            <input type="password" class="form-control form-control-lg">
++            <div class="form-label bg-warning" style="margin: 10px 0px;">Ошибка (если будет)</div>
++          </div>
++        </div>
++      </div>
++      <div class="row mb-3 offset-sm-5">
++        <div class="col">
++          <button type="submit" class="btn btn-success">Принять</button>
++        </div>
++      </div>
++    </form>
++  </div>
++  <script src="js/bootstrap.bundle.min.js"></script>
++</body>
++</html>
+Index: DJANGO/advertisement/advertisement/urls.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/DJANGO/advertisement/advertisement/urls.py b/DJANGO/advertisement/advertisement/urls.py
+new file mode 100644
+--- /dev/null	
++++ b/DJANGO/advertisement/advertisement/urls.py	
+@@ -0,0 +1,22 @@
++"""
++URL configuration for advertisement project.
++
++The `urlpatterns` list routes URLs to views. For more information please see:
++    https://docs.djangoproject.com/en/4.2/topics/http/urls/
++Examples:
++Function views
++    1. Add an import:  from my_app import views
++    2. Add a URL to urlpatterns:  path('', views.home, name='home')
++Class-based views
++    1. Add an import:  from other_app.views import Home
++    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
++Including another URLconf
++    1. Import the include() function: from django.urls import include, path
++    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
++"""
++from django.contrib import admin
++from django.urls import path
++
++urlpatterns = [
++    path('admin/', admin.site.urls),
++]
+Index: DJANGO/advertisement/advertisement/wsgi.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/DJANGO/advertisement/advertisement/wsgi.py b/DJANGO/advertisement/advertisement/wsgi.py
+new file mode 100644
+--- /dev/null	
++++ b/DJANGO/advertisement/advertisement/wsgi.py	
+@@ -0,0 +1,16 @@
++"""
++WSGI config for advertisement project.
++
++It exposes the WSGI callable as a module-level variable named ``application``.
++
++For more information on this file, see
++https://docs.djangoproject.com/en/4.2/howto/deployment/wsgi/
++"""
++
++import os
++
++from django.core.wsgi import get_wsgi_application
++
++os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'advertisement.settings')
++
++application = get_wsgi_application()
+Index: DJANGO/advertisement/advertisement/settings.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/DJANGO/advertisement/advertisement/settings.py b/DJANGO/advertisement/advertisement/settings.py
+new file mode 100644
+--- /dev/null	
++++ b/DJANGO/advertisement/advertisement/settings.py	
+@@ -0,0 +1,123 @@
++"""
++Django settings for advertisement project.
++
++Generated by 'django-admin startproject' using Django 4.2.4.
++
++For more information on this file, see
++https://docs.djangoproject.com/en/4.2/topics/settings/
++
++For the full list of settings and their values, see
++https://docs.djangoproject.com/en/4.2/ref/settings/
++"""
++
++from pathlib import Path
++
++# Build paths inside the project like this: BASE_DIR / 'subdir'.
++BASE_DIR = Path(__file__).resolve().parent.parent
++
++
++# Quick-start development settings - unsuitable for production
++# See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
++
++# SECURITY WARNING: keep the secret key used in production secret!
++SECRET_KEY = 'django-insecure-yi^)5xnk2e2giru$y$^j*howarvbzo6hoxtvladc595m31k@n2'
++
++# SECURITY WARNING: don't run with debug turned on in production!
++DEBUG = True
++
++ALLOWED_HOSTS = []
++
++
++# Application definition
++
++INSTALLED_APPS = [
++    'django.contrib.admin',
++    'django.contrib.auth',
++    'django.contrib.contenttypes',
++    'django.contrib.sessions',
++    'django.contrib.messages',
++    'django.contrib.staticfiles',
++]
++
++MIDDLEWARE = [
++    'django.middleware.security.SecurityMiddleware',
++    'django.contrib.sessions.middleware.SessionMiddleware',
++    'django.middleware.common.CommonMiddleware',
++    'django.middleware.csrf.CsrfViewMiddleware',
++    'django.contrib.auth.middleware.AuthenticationMiddleware',
++    'django.contrib.messages.middleware.MessageMiddleware',
++    'django.middleware.clickjacking.XFrameOptionsMiddleware',
++]
++
++ROOT_URLCONF = 'advertisement.urls'
++
++TEMPLATES = [
++    {
++        'BACKEND': 'django.template.backends.django.DjangoTemplates',
++        'DIRS': [],
++        'APP_DIRS': True,
++        'OPTIONS': {
++            'context_processors': [
++                'django.template.context_processors.debug',
++                'django.template.context_processors.request',
++                'django.contrib.auth.context_processors.auth',
++                'django.contrib.messages.context_processors.messages',
++            ],
++        },
++    },
++]
++
++WSGI_APPLICATION = 'advertisement.wsgi.application'
++
++
++# Database
++# https://docs.djangoproject.com/en/4.2/ref/settings/#databases
++
++DATABASES = {
++    'default': {
++        'ENGINE': 'django.db.backends.sqlite3',
++        'NAME': BASE_DIR / 'db.sqlite3',
++    }
++}
++
++
++# Password validation
++# https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
++
++AUTH_PASSWORD_VALIDATORS = [
++    {
++        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
++    },
++    {
++        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
++    },
++    {
++        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
++    },
++    {
++        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
++    },
++]
++
++
++# Internationalization
++# https://docs.djangoproject.com/en/4.2/topics/i18n/
++
++LANGUAGE_CODE = 'en-us'
++
++TIME_ZONE = 'UTC'
++
++USE_I18N = True
++
++USE_TZ = True
++
++
++# Static files (CSS, JavaScript, Images)
++# https://docs.djangoproject.com/en/4.2/howto/static-files/
++
++STATIC_URL = 'static/'
++
++# Default primary key field type
++# https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
++
++DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+Index: DJANGO/advertisement/advertisement/asgi.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/DJANGO/advertisement/advertisement/asgi.py b/DJANGO/advertisement/advertisement/asgi.py
+new file mode 100644
+--- /dev/null	
++++ b/DJANGO/advertisement/advertisement/asgi.py	
+@@ -0,0 +1,16 @@
++"""
++ASGI config for advertisement project.
++
++It exposes the ASGI callable as a module-level variable named ``application``.
++
++For more information on this file, see
++https://docs.djangoproject.com/en/4.2/howto/deployment/asgi/
++"""
++
++import os
++
++from django.core.asgi import get_asgi_application
++
++os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'advertisement.settings')
++
++application = get_asgi_application()
+Index: DJANGO/advertisement/app_advetisements/tests.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/DJANGO/advertisement/app_advetisements/tests.py b/DJANGO/advertisement/app_advetisements/tests.py
+new file mode 100644
+--- /dev/null	
++++ b/DJANGO/advertisement/app_advetisements/tests.py	
+@@ -0,0 +1,3 @@
++from django.test import TestCase
++
++# Create your tests here.
+Index: DJANGO/advertisement/app_advetisements/admin.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/DJANGO/advertisement/app_advetisements/admin.py b/DJANGO/advertisement/app_advetisements/admin.py
+new file mode 100644
+--- /dev/null	
++++ b/DJANGO/advertisement/app_advetisements/admin.py	
+@@ -0,0 +1,3 @@
++from django.contrib import admin
++
++# Register your models here.
+Index: DJANGO/advertisement/app_advetisements/models.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/DJANGO/advertisement/app_advetisements/models.py b/DJANGO/advertisement/app_advetisements/models.py
+new file mode 100644
+--- /dev/null	
++++ b/DJANGO/advertisement/app_advetisements/models.py	
+@@ -0,0 +1,3 @@
++from django.db import models
++
++# Create your models here.
+Index: DJANGO/advertisement/app_advetisements/apps.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/DJANGO/advertisement/app_advetisements/apps.py b/DJANGO/advertisement/app_advetisements/apps.py
+new file mode 100644
+--- /dev/null	
++++ b/DJANGO/advertisement/app_advetisements/apps.py	
+@@ -0,0 +1,6 @@
++from django.apps import AppConfig
++
++
++class AppAdvetisementsConfig(AppConfig):
++    default_auto_field = 'django.db.models.BigAutoField'
++    name = 'app_advetisements'
+Index: DJANGO/advertisement/app_advetisements/views.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/DJANGO/advertisement/app_advetisements/views.py b/DJANGO/advertisement/app_advetisements/views.py
+new file mode 100644
+--- /dev/null	
++++ b/DJANGO/advertisement/app_advetisements/views.py	
+@@ -0,0 +1,3 @@
++from django.shortcuts import render
++
++# Create your views here.
+diff --git a/DJANGO/advertisement/db.sqlite3 b/DJANGO/advertisement/db.sqlite3
+new file mode 100644
+diff --git a/DJANGO/advertisement/advertisement/__init__.py b/DJANGO/advertisement/advertisement/__init__.py
+new file mode 100644
+diff --git a/DJANGO/advertisement/app_advetisements/migrations/__init__.py b/DJANGO/advertisement/app_advetisements/migrations/__init__.py
+new file mode 100644
+diff --git a/DJANGO/advertisement/app_advetisements/__init__.py b/DJANGO/advertisement/app_advetisements/__init__.py
+new file mode 100644
