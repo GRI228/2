@@ -43,8 +43,6 @@ class Advertisement(models.Model):
                 )
         else:
             return 'No Image Found'
-        #image_tag.short_description = 'Image'
-
 
     class Meta:
         db_table = 'advertisements'
