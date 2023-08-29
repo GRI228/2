@@ -1,7 +1,9 @@
 from django.db import models
 from django.contrib import admin
 from django.utils.html import format_html
+from django.contrib.auth import get_user_model
 
+User = get_user_model()
 
 class Advertisement(models.Model):
     title = models.CharField("заголовок", max_length=128)
@@ -9,7 +11,9 @@ class Advertisement(models.Model):
     price = models.DecimalField("цена", max_digits=10, decimal_places=2)
     auction = models.BooleanField("торг", help_text="Отметьте, если торг уместен")
     created_at = models.DateTimeField(auto_now_add=True)
-    uptated_at = models.DateTimeField(auto_now=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    image = models.ImageField("Изображение", upload_to="advertisements/")
+    user = models.ForeignKey(User, verbose_name="Пользователь", on_delete=models.CASCADE)
 
     @admin.display(description='дата создания')
     def created_date(self):
@@ -22,14 +26,25 @@ class Advertisement(models.Model):
         return self.created_at.strftime("%d.%m.%Y в %H:%M:%S")
 
     @admin.display(description='дата последнего обновления')
-    def uptated_date(self):
+    def updated_date(self):
         from django.utils import timezone
-        if self.uptated_at.date() == timezone.now().date():
-            created_time = self.uptated_at.time().strftime("%H:%M:%S")
+        if self.updated_at.date() == timezone.now().date():
+            created_time = self.updated_at.time().strftime("%H:%M:%S")
             return format_html(
                 '<span style="color: red; font-weight: bold;">Сегодня в {}</span>', created_time
             )
-        return self.uptated_at.strftime("%d.%m.%Y в %H:%M:%S")
+        return self.updated_at.strftime("%d.%m.%Y в %H:%M:%S")
+
+    @admin.display(description='изображение')
+    def image_img(self):
+        if self.image:
+            return format_html(
+                '<img src="%s" style="width: 45px; height:45px;" />' % self.image.url
+                )
+        else:
+            return 'No Image Found'
+        #image_tag.short_description = 'Image'
+
 
     class Meta:
         db_table = 'advertisements'
